@@ -3,575 +3,692 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Studiu Documentar: Selecția Senzorului de Temperatură</title>
-    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <title>Documentație Senzori de Temperatură - Proiect Termostat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- Application Structure Plan: SPA este structurat ca un dosar tehnic interactiv (dashboard documentar). Începe cu introducerea și taxonomia (bazată pe imaginea furnizată), continuă cu o bază de date interactivă de 25 de senzori permițând filtrarea, apoi o secțiune de analiză vizuală a performanțelor și prețurilor. Ultima secțiune, "Cel Ales", argumentează tehnic decizia finală pentru senzorul liniar cu semiconductor. Această structură liniară, dar cu elemente exploratorii, ghidează utilizatorul de la o privire de ansamblu spre o decizie tehnică argumentată. -->
-    <!-- Visualization & Content Choices: Tabelul interactiv permite explorarea celor 25 de senzori; Chart.js (Scatter Plot) este folosit pentru a corela Prețul cu Acuratețea, evidențiind raportul calitate-preț; Chart.js (Doughnut) ilustrează distribuția tipologiilor. S-au folosit exclusiv caractere Unicode pentru iconografie. Elementele Canvas sunt restricționate responsiv prin clase CSS dedicate, conform cerințelor. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-    <style>
-        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; color: #0f172a; }
-        .chart-container { position: relative; width: 100%; max-width: 800px; margin-left: auto; margin-right: auto; height: 350px; max-height: 400px; }
-        @media (max-width: 768px) { .chart-container { height: 250px; } }
-        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .sensor-row:hover { background-color: #f1f5f9; cursor: pointer; transition: background-color 0.2s; }
-        .selected-row { background-color: #e0f2fe !important; border-left: 4px solid #0284c7; }
-        .hidden-content { display: none; }
-        .fade-in { animation: fadeIn 0.5s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
-        /* Ajustări pentru conținutul generat de AI */
-        .prose pre { background-color: #1e293b; color: #f8fafc; border-radius: 0.5rem; }
-        .prose-invert pre { background-color: #0f172a; border: 1px solid #334155; }
-    </style>
-</head>
-<body class="antialiased">
-
-    <nav class="fixed top-0 w-full glass-panel z-50 border-b border-slate-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <span class="text-2xl font-bold text-slate-800">&#128187; DocuSens</span>
-                </div>
-                <div class="hidden md:flex items-center space-x-8">
-                    <a href="#introducere" class="text-sm font-medium text-slate-600 hover:text-blue-600 transition">Introducere</a>
-                    <a href="#clasificare" class="text-sm font-medium text-slate-600 hover:text-blue-600 transition">Tipuri</a>
-                    <a href="#baza-date" class="text-sm font-medium text-slate-600 hover:text-blue-600 transition">Lista Senzori</a>
-                    <a href="#grafice" class="text-sm font-medium text-slate-600 hover:text-blue-600 transition">Grafice</a>
-                    <a href="#cel-ales" class="px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition">&#11088; Senzorul Ales</a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <main class="pt-24 pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20">
-
-        <section id="introducere" class="scroll-mt-24 fade-in">
-            <div class="text-center max-w-3xl mx-auto">
-                <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight sm:text-5xl mb-6">
-                    Alegerea unui Senzor de Temperatură
-                </h1>
-                <p class="text-lg text-slate-600 leading-relaxed mb-8">
-                    Aici prezentăm pe scurt 25 de senzori de temperatură pentru a-l alege pe cel mai bun pentru proiectul nostru. Căutăm un senzor care să îndeplinească patru condiții simple: <strong>să fie semiconductor, să aibă ieșire liniară, să fie ieftin (dar bun) și să existe deja în simulatorul Proteus</strong>.
-                </p>
-            </div>
-        </section>
-
-        <section id="clasificare" class="scroll-mt-24">
-            <div class="mb-10 border-b border-slate-200 pb-5">
-                <h2 class="text-3xl font-bold text-slate-800">&#128209; Tipuri de Senzori</h2>
-                <p class="mt-4 text-slate-600 max-w-4xl leading-relaxed">
-                    Senzorii se împart în două mari categorii: cu contact (care ating obiectul) și fără contact (cu infraroșu). Noi ne concentrăm pe cei cu contact, care sunt mai des folosiți în proiecte electronice simple și simulări.
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition">
-                    <div class="text-3xl mb-4 text-blue-500">&#128200;</div>
-                    <h3 class="text-xl font-bold text-slate-800 mb-2">Termistori</h3>
-                    <p class="text-sm text-slate-600">Își schimbă rezistența în funcție de căldură. Sunt foarte ieftini, dar neliniari. Asta înseamnă că e destul de greu să transformi semnalul lor în grade Celsius în cod.</p>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition">
-                    <div class="text-3xl mb-4 text-blue-500">&#9881;</div>
-                    <h3 class="text-xl font-bold text-slate-800 mb-2">RTD (Platină)</h3>
-                    <p class="text-sm text-slate-600">Sunt foarte exacți și rezistenți în timp. Problema este că sunt scumpi și au nevoie de piese suplimentare pe placă pentru a putea fi citiți.</p>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition">
-                    <div class="text-3xl mb-4 text-blue-500">&#9889;</div>
-                    <h3 class="text-xl font-bold text-slate-800 mb-2">Termocupluri</h3>
-                    <p class="text-sm text-slate-600">Sunt perfecți pentru temperaturi uriașe (ex. cuptoare industriale). Nu ne ajută la temperatura camerei pentru că nu sunt suficient de exacți.</p>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border-blue-200 hover:shadow-md transition ring-2 ring-blue-50">
-                    <div class="text-3xl mb-4 text-blue-600">&#128268;</div>
-                    <h3 class="text-xl font-bold text-slate-800 mb-2">Semiconductori</h3>
-                    <p class="text-sm text-slate-600">Sunt exact ce căutăm. Dau un semnal liniar (ușor de calculat), sunt ieftini, se leagă ușor la un Arduino și se găsesc direct în Proteus.</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="baza-date" class="scroll-mt-24 glass-panel p-6 sm:p-8 rounded-2xl">
-            <div class="mb-8">
-                <h2 class="text-3xl font-bold text-slate-800 mb-4">&#128451; Lista celor 25 de Senzori</h2>
-                <p class="text-slate-600 leading-relaxed">
-                    Aici poți explora 25 de senzori diferiți. Folosește filtrele de mai jos pentru a căuta un anumit tip sau pentru a vedea care merg în Proteus. Apasă pe oricare dintre ei pentru a vedea detalii și pentru a întreba AI-ul cum se folosește.
-                </p>
-            </div>
-
-            <div class="flex flex-col md:flex-row gap-4 mb-6">
-                <div class="flex-1">
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Filtrare după Tip</label>
-                    <select id="typeFilter" class="w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border">
-                        <option value="all">Toate Tipurile</option>
-                        <option value="Semiconductor Liniar">Semiconductor Liniar</option>
-                        <option value="Semiconductor Digital">Semiconductor Digital</option>
-                        <option value="Termistor">Termistor</option>
-                        <option value="RTD">RTD (Platină)</option>
-                        <option value="Termocuplu">Termocuplu</option>
-                        <option value="Infraroșu">Infraroșu (Fără contact)</option>
-                    </select>
-                </div>
-                <div class="flex-1">
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Disponibilitate Proteus</label>
-                    <select id="proteusFilter" class="w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border">
-                        <option value="all">Indiferent</option>
-                        <option value="Da">Da (Nativ)</option>
-                        <option value="Nu">Nu (Necesită librării externe)</option>
-                    </select>
-                </div>
-                <div class="flex-1 flex items-end">
-                    <div class="text-sm text-slate-500 mb-2 font-medium" id="recordCount">Afișare 25 din 25 senzori</div>
-                </div>
-            </div>
-
-            <div class="overflow-x-auto rounded-lg border border-slate-200">
-                <table class="min-w-full divide-y divide-slate-200">
-                    <thead class="bg-slate-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Model</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tip</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Preț (1-Ieftin, 5-Scump)</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Eroare (±°C)</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">În Proteus</th>
-                        </tr>
-                    </thead>
-                    <tbody id="sensorTableBody" class="bg-white divide-y divide-slate-200">
-                    </tbody>
-                </table>
-            </div>
-
-            <div id="sensorDetailPanel" class="mt-6 p-6 bg-slate-50 rounded-xl border border-slate-200 hidden-content">
-                <h3 id="detailName" class="text-2xl font-bold text-blue-700 mb-2">Nume Senzor</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-700">
-                    <div>
-                        <p><strong>Clasificare:</strong> <span id="detailType"></span></p>
-                        <p><strong>Liniaritate:</strong> <span id="detailLinear"></span></p>
-                        <p><strong>Ieșire:</strong> <span id="detailOutput"></span></p>
-                    </div>
-                    <div>
-                        <p><strong>Argument Calitate/Preț:</strong> <span id="detailArg"></span></p>
-                        <p><strong>Integrare Proteus:</strong> <span id="detailProteus"></span></p>
-                    </div>
-                </div>
-                
-                <!-- Secțiune AI pentru detalii senzor -->
-                <div class="mt-5 pt-4 border-t border-slate-200">
-                    <button id="btn-ai-insight" class="w-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100 py-2.5 rounded-lg font-semibold transition flex items-center justify-center border border-indigo-200 shadow-sm">
-                        <span class="mr-2 text-xl">✨</span> Întreabă AI-ul la ce e bun acest senzor
-                    </button>
-                    <div id="ai-insight-loading" class="mt-4 text-sm text-indigo-600 hidden flex items-center justify-center font-medium">
-                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> 
-                        AI-ul scrie răspunsul...
-                    </div>
-                    <div id="ai-insight-result" class="mt-4 text-slate-700 hidden prose prose-sm max-w-none bg-white p-4 rounded-lg border border-slate-200 shadow-sm"></div>
-                </div>
-            </div>
-        </section>
-
-        <section id="grafice" class="scroll-mt-24">
-            <div class="mb-10">
-                <h2 class="text-3xl font-bold text-slate-800 mb-4">&#128202; Grafice și Comparații</h2>
-                <p class="text-slate-600 leading-relaxed">
-                    Ca să fie mai ușor de ales, am pus senzorii pe un grafic. Cei aflați în partea din <strong>stânga-jos</strong> sunt cei mai buni: costă puțin și au o eroare foarte mică.
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <h3 class="text-lg font-bold text-slate-700 text-center mb-4">Preț vs. Eroare</h3>
-                    <p class="text-xs text-slate-500 text-center mb-4">Punctele din stânga-jos sunt senzorii ieftini și exacți.</p>
-                    <div class="chart-container">
-                        <canvas id="scatterChart"></canvas>
-                    </div>
-                </div>
-                
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <h3 class="text-lg font-bold text-slate-700 text-center mb-4">Din ce categorie fac parte cei 25 de senzori?</h3>
-                    <div class="chart-container">
-                        <canvas id="doughnutChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="cel-ales" class="scroll-mt-24">
-            <div class="bg-gradient-to-br from-slate-900 to-blue-900 rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden text-white border border-blue-800">
-                <div class="absolute top-0 right-0 p-8 opacity-10 text-9xl font-serif">!</div>
-                
-                <div class="relative z-10">
-                    <div class="inline-block px-4 py-1 rounded-full bg-emerald-500 text-slate-900 font-bold text-sm tracking-widest uppercase mb-6 shadow-lg shadow-emerald-500/30">
-                        &#10004; SENZORUL ALES
-                    </div>
-                    
-                    <h2 class="text-4xl md:text-6xl font-extrabold text-white mb-6">LM35</h2>
-                    <h3 class="text-xl md:text-2xl font-light text-blue-200 mb-8 border-b border-blue-700/50 pb-6">
-                        Senzor cu Semiconductor (Ieșire Liniară)
-                    </h3>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
-                        <div class="space-y-6">
-                            <h4 class="text-xl font-bold text-emerald-400">&#128269; De ce am ales LM35?</h4>
-                            <ul class="space-y-4">
-                                <li class="flex items-start">
-                                    <span class="text-emerald-500 mr-3 text-lg">&#9658;</span>
-                                    <span><strong>Este liniar:</strong> Tensiunea crește cu exact 10mV pentru fiecare grad Celsius. Nu ai nevoie de formule matematice complicate în cod.</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <span class="text-emerald-500 mr-3 text-lg">&#9658;</span>
-                                    <span><strong>Ieftin și destul de exact:</strong> Costă foarte puțin, dar ne oferă o eroare mică (doar ±0.5°C). Este perfect pentru proiecte obișnuite.</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <span class="text-emerald-500 mr-3 text-lg">&#9658;</span>
-                                    <span><strong>Gata de folosit în Proteus:</strong> Îl găsești direct în meniul din Proteus, nu trebuie să adaugi fișiere sau librării în plus ca să-l simulezi.</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <span class="text-emerald-500 mr-3 text-lg">&#9658;</span>
-                                    <span><strong>Simplu de conectat:</strong> Are doar 3 pini: alimentare, masă (GND) și ieșirea care se leagă direct la placa de dezvoltare.</span>
-                                </li>
-                            </ul>
-                        </div>
-                        
-                        <div class="bg-slate-800/50 backdrop-blur-md rounded-2xl p-6 border border-slate-700 h-fit">
-                            <h4 class="text-lg font-bold text-blue-300 mb-4">&#9874; Date Tehnice pe Scurt</h4>
-                            <div class="space-y-3 font-mono text-sm text-slate-300">
-                                <div class="flex justify-between border-b border-slate-700 pb-2">
-                                    <span>Creștere pe grad:</span>
-                                    <span class="text-white font-bold">+10 mV / °C</span>
-                                </div>
-                                <div class="flex justify-between border-b border-slate-700 pb-2">
-                                    <span>Eroare la 25°C:</span>
-                                    <span class="text-white font-bold">±0.5 °C</span>
-                                </div>
-                                <div class="flex justify-between border-b border-slate-700 pb-2">
-                                    <span>Poate măsura între:</span>
-                                    <span class="text-white font-bold">-55°C și +150°C</span>
-                                </div>
-                                <div class="flex justify-between border-b border-slate-700 pb-2">
-                                    <span>Tensiune curent:</span>
-                                    <span class="text-white font-bold">Între 4V și 30V</span>
-                                </div>
-                            </div>
-                            <div class="mt-6 bg-slate-900 rounded-lg p-4 border border-slate-600 text-center">
-                                <span class="text-xs text-slate-400 block mb-1">Calcul simplu în cod:</span>
-                                <span class="text-emerald-400 font-mono text-lg">Temp = Volți * 100</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Secțiune AI pentru Cod Arduino -->
-                    <div class="mt-10 bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-indigo-500/40 relative overflow-hidden">
-                        <div class="absolute -right-10 -top-10 w-40 h-40 bg-indigo-600/20 blur-3xl rounded-full"></div>
-                        <h4 class="text-xl font-bold text-indigo-300 mb-2 flex items-center relative z-10">
-                            <span class="text-2xl mr-2">✨</span> Generare Cod cu AI
-                        </h4>
-                        <p class="text-slate-300 text-sm mb-6 relative z-10">Apasă pe butonul de mai jos și AI-ul îți va scrie imediat un cod simplu pentru Arduino ca să citești senzorul LM35, plus instrucțiuni de conectare în Proteus.</p>
-                        
-                        <button id="btn-generate-code" class="relative z-10 bg-indigo-600 hover:bg-indigo-500 text-white py-3 px-6 rounded-xl font-bold transition shadow-lg shadow-indigo-500/20 flex items-center">
-                            Generează Cod și Explicații
-                        </button>
-                        
-                        <div id="ai-code-loading" class="mt-6 text-sm text-indigo-400 hidden flex items-center relative z-10">
-                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> 
-                            Se generează codul și documentația. Te rugăm să aștepți...
-                        </div>
-                        <div id="ai-code-result" class="mt-6 text-sm hidden prose prose-invert prose-indigo max-w-none bg-slate-900/80 p-6 rounded-xl border border-slate-700 relative z-10"></div>
-                    </div>
-
-                </div>
-            </div>
-            
-            <div class="mt-8 text-slate-600 leading-relaxed max-w-4xl mx-auto text-center border-t border-slate-200 pt-8">
-                <p>
-                    <strong>Concluzie:</strong> LM35 este senzorul ideal pentru acest proiect. Este un senzor cu semiconductor, cu ieșire liniară, foarte ieftin și simplu de folosit. Cel mai mare avantaj al său este că funcționează perfect direct din simulatorul Proteus, fără alte bătăi de cap.
-                </p>
-            </div>
-        </section>
-
-    </main>
-
-    <footer class="bg-slate-900 text-slate-400 py-8 border-t border-slate-800 text-center text-sm">
-        <p>Prezentare senzor de temperatură. S-au analizat 25 de opțiuni, iar câștigătorul este LM35.</p>
-    </footer>
-
+    
+    <!-- Configurare Tailwind pentru a potrivi culorile din poza trimisă -->
     <script>
-        const sensorsData = [
-            { id: 1, name: "LM35", type: "Semiconductor Liniar", price: 1, acc: 0.5, proteus: "Da", linear: "Da (10mV/°C)", output: "Analogic (Volți)", arg: "Ieftin, exact, cel mai ușor de folosit pentru începători." },
-            { id: 2, name: "TMP36", type: "Semiconductor Liniar", price: 1, acc: 2.0, proteus: "Da", linear: "Da", output: "Analogic (Volți)", arg: "Bun pentru plăci care funcționează la 3.3V, dar o idee mai puțin exact." },
-            { id: 3, name: "DS18B20", type: "Semiconductor Digital", price: 2, acc: 0.5, proteus: "Da", linear: "Digital (Dă direct gradele)", output: "Digital", arg: "Foarte bun, dar comunică digital, nu analogic simplu." },
-            { id: 4, name: "DHT11", type: "Semiconductor Digital", price: 1, acc: 2.0, proteus: "Da", linear: "Digital", output: "Digital", arg: "Foarte ieftin, măsoară și umiditatea, dar e slab la exactitate." },
-            { id: 5, name: "DHT22", type: "Semiconductor Digital", price: 2, acc: 0.5, proteus: "Da", linear: "Digital", output: "Digital", arg: "Fratele mai bun al lui DHT11, dar tot digital este." },
-            { id: 6, name: "NTC 10k", type: "Termistor", price: 1, acc: 1.0, proteus: "Da", linear: "Nu (Este o curbă)", output: "Rezistență (Ohmi)", arg: "Cel mai ieftin posibil, dar greu de transformat în grade în cod." },
-            { id: 7, name: "PTC 1k", type: "Termistor", price: 1, acc: 1.5, proteus: "Da", linear: "Nu", output: "Rezistență (Ohmi)", arg: "Folosit mai mult ca siguranță împotriva supraîncălzirii." },
-            { id: 8, name: "Pt100", type: "RTD", price: 4, acc: 0.1, proteus: "Da", linear: "Aproape Liniar", output: "Rezistență", arg: "Pentru industrie. Prea scump și complicat pentru proiecte simple." },
-            { id: 9, name: "Pt1000", type: "RTD", price: 4, acc: 0.1, proteus: "Da", linear: "Aproape Liniar", output: "Rezistență", arg: "La fel ca Pt100, consumă mai puțin curent, preț mare." },
-            { id: 10, name: "Termocuplu Tip K", type: "Termocuplu", price: 3, acc: 2.2, proteus: "Nu", linear: "Slab", output: "Milivolți", arg: "Pentru foc sau cuptoare, nu e bun la temperatura camerei." },
-            { id: 11, name: "Termocuplu Tip J", type: "Termocuplu", price: 3, acc: 2.2, proteus: "Nu", linear: "Slab", output: "Milivolți", arg: "Similar cu tip K, dar măsoară temperaturi mai mici." },
-            { id: 12, name: "MAX6675", type: "Semiconductor Digital", price: 3, acc: 0.25, proteus: "Da", linear: "Digital", output: "Digital", arg: "Este piesa de care ai nevoie ca să citești un termocuplu." },
-            { id: 13, name: "BME280", type: "Semiconductor Digital", price: 4, acc: 1.0, proteus: "Nu", linear: "Digital", output: "Digital", arg: "Măsoară tot (aer, presiune, umiditate), dar e scump și complicat." },
-            { id: 14, name: "BMP280", type: "Semiconductor Digital", price: 3, acc: 1.0, proteus: "Da", linear: "Digital", output: "Digital", arg: "Mai mult barometru decât termometru." },
-            { id: 15, name: "SHT31", type: "Semiconductor Digital", price: 4, acc: 0.3, proteus: "Nu", linear: "Digital", output: "Digital", arg: "Super exact, dar scump și greu de simulat." },
-            { id: 16, name: "SHT21", type: "Semiconductor Digital", price: 3, acc: 0.3, proteus: "Nu", linear: "Digital", output: "Digital", arg: "Model mai vechi de la SHT31." },
-            { id: 17, name: "Si7021", type: "Semiconductor Digital", price: 3, acc: 0.4, proteus: "Nu", linear: "Digital", output: "Digital", arg: "O variantă digitală bună, dar scumpă." },
-            { id: 18, name: "MCP9808", type: "Semiconductor Digital", price: 3, acc: 0.25, proteus: "Da", linear: "Digital", output: "Digital", arg: "Cel mai exact senzor digital ieftin, dar noi vrem analogic liniar." },
-            { id: 19, name: "AD590", type: "Semiconductor Liniar", price: 5, acc: 0.5, proteus: "Da", linear: "Da", output: "Curent", arg: "Liniar, dar scump, folosit în echipamente scumpe." },
-            { id: 20, name: "LM75", type: "Semiconductor Digital", price: 2, acc: 2.0, proteus: "Da", linear: "Digital", output: "Digital", arg: "Exactitate slabă, folosit doar să pornească un ventilator la o anumită temperatură." },
-            { id: 21, name: "TC74", type: "Semiconductor Digital", price: 2, acc: 2.0, proteus: "Da", linear: "Digital", output: "Digital", arg: "Senzor simplu, dar arată doar din grad în grad." },
-            { id: 22, name: "MLX90614", type: "Infraroșu", price: 5, acc: 0.5, proteus: "Nu", linear: "Digital", output: "Digital", arg: "Fără contact (gen termometre de frunte), foarte scump." },
-            { id: 23, name: "LM34", type: "Semiconductor Liniar", price: 2, acc: 0.5, proteus: "Da", linear: "Da", output: "Analogic (Volți)", arg: "E la fel ca LM35, dar e făcut pentru grade Fahrenheit. Inutil la noi." },
-            { id: 24, name: "KTY81", type: "Semiconductor Liniar", price: 1, acc: 2.0, proteus: "Da", linear: "Nu prea", output: "Rezistență", arg: "Ieftin, dar curba lui face calculele din cod destul de enervante." },
-            { id: 25, name: "LM335", type: "Semiconductor Liniar", price: 1, acc: 1.0, proteus: "Da", linear: "Da", output: "Analogic (Volți)", arg: "E fratele lui LM35, dar arată în grade Kelvin, deci trebuie să scazi 273 în cod." }
-        ];
-
-        let scatterChartInstance = null;
-        let doughnutChartInstance = null;
-        let currentSelectedSensorName = "";
-
-        // Setări Gemini API
-        const apiKey = ""; 
-        
-        async function callGeminiAPI(prompt) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const payload = { contents: [{ parts: [{ text: prompt }] }] };
-            const delays = [1000, 2000, 4000, 8000, 16000];
-            let attempt = 0;
-
-            while (attempt <= delays.length) {
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                    
-                    const data = await response.json();
-                    return data.candidates?.[0]?.content?.parts?.[0]?.text || "Eroare: Nu s-a putut genera conținutul.";
-                } catch (error) {
-                    if (attempt < delays.length) {
-                        console.warn(`Tentativa ${attempt + 1} eșuată. Reîncercare în ${delays[attempt]}ms...`);
-                        await new Promise(res => setTimeout(res, delays[attempt]));
-                        attempt++;
-                    } else {
-                        return "**Eroare de conexiune API:** Nu am putut contacta asistentul AI după mai multe încercări. Te rugăm să încerci din nou.";
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandOrange: '#f05a28',
+                        brandBg: '#f9fafb',
+                        pillBg: '#f3f4f6'
                     }
                 }
             }
         }
+    </script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #ffffff; color: #111827; }
+        
+        /* Stilizare pentru schemele electrice făcute din HTML */
+        .schematic-box { border: 2px solid #374151; border-radius: 4px; padding: 8px; text-align: center; font-family: monospace; font-weight: bold; background: white; }
+        .wire-h { height: 2px; background-color: #374151; width: 30px; display: inline-block; vertical-align: middle; }
+        .wire-v { width: 2px; background-color: #374151; height: 30px; margin: 0 auto; }
+        .node { width: 8px; height: 8px; background-color: #374151; border-radius: 50%; display: inline-block; vertical-align: middle; margin: 0 -4px; z-index: 10; position: relative; }
+        
+        /* Scrollbar personalizat */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        function renderTable(data) {
-            const tbody = document.getElementById('sensorTableBody');
-            tbody.innerHTML = '';
-            document.getElementById('recordCount').textContent = `Afișare ${data.length} din 25 senzori`;
+        /* Meniu de mobil */
+        #mobile-menu { display: none; }
+        #mobile-menu.open { display: flex; flex-direction: column; }
+    </style>
+</head>
+<body class="antialiased pb-20">
 
-            data.forEach(sensor => {
-                const tr = document.createElement('tr');
-                tr.className = 'sensor-row group';
-                
-                let priceDots = '';
-                for(let i=0; i<5; i++) {
-                    priceDots += i < sensor.price ? '&#128178;' : '<span class="text-slate-200">&#128178;</span>';
-                }
-
-                tr.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-800">${sensor.name}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-800">
-                            ${sensor.type}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-emerald-600">${priceDots}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600 font-mono">±${sensor.acc}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium ${sensor.proteus.includes('Da') ? 'text-blue-600' : 'text-red-500'}">${sensor.proteus}</td>
-                `;
-                
-                tr.addEventListener('click', () => {
-                    document.querySelectorAll('.sensor-row').forEach(row => row.classList.remove('selected-row'));
-                    tr.classList.add('selected-row');
-                    
-                    currentSelectedSensorName = sensor.name;
-                    
-                    // Resetare status AI
-                    document.getElementById('ai-insight-result').classList.add('hidden-content');
-                    document.getElementById('ai-insight-result').innerHTML = '';
-                    document.getElementById('ai-insight-loading').classList.add('hidden');
-                    document.getElementById('btn-ai-insight').classList.remove('hidden');
-
-                    const panel = document.getElementById('sensorDetailPanel');
-                    panel.classList.remove('hidden-content');
-                    panel.classList.add('fade-in');
-                    
-                    document.getElementById('detailName').textContent = sensor.name;
-                    document.getElementById('detailType').textContent = sensor.type;
-                    document.getElementById('detailLinear').textContent = sensor.linear;
-                    document.getElementById('detailOutput').textContent = sensor.output;
-                    document.getElementById('detailArg').textContent = sensor.arg;
-                    document.getElementById('detailProteus').textContent = sensor.proteus;
-
-                    if(sensor.name === 'LM35') {
-                        document.getElementById('detailName').innerHTML = `&#11088; ${sensor.name} (CEL ALES)`;
-                        panel.className = 'mt-6 p-6 rounded-xl border-2 border-emerald-400 bg-emerald-50 fade-in';
-                    } else {
-                        panel.className = 'mt-6 p-6 rounded-xl border border-slate-200 bg-slate-50 fade-in';
-                    }
-                });
-                
-                tbody.appendChild(tr);
-            });
-        }
-
-        function initCharts(data) {
-            const ctxScatter = document.getElementById('scatterChart').getContext('2d');
-            const scatterData = data.map(s => ({
-                x: s.price,
-                y: s.acc,
-                label: s.name,
-                isWinner: s.name === 'LM35'
-            }));
-
-            scatterChartInstance = new Chart(ctxScatter, {
-                type: 'scatter',
-                data: {
-                    datasets: [{
-                        label: 'Senzori Evaluati',
-                        data: scatterData,
-                        backgroundColor: scatterData.map(d => d.isWinner ? '#10b981' : '#3b82f6'),
-                        borderColor: scatterData.map(d => d.isWinner ? '#047857' : '#2563eb'),
-                        pointRadius: scatterData.map(d => d.isWinner ? 10 : 6),
-                        pointHoverRadius: 12
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { title: { display: true, text: 'Cost Relativ (1 Ieftin - 5 Scump)' }, min: 0, max: 6, ticks: {stepSize: 1} },
-                        y: { title: { display: true, text: 'Eroare / Acuratețe (±°C) [Mai mic e mai bun]' }, min: 0, max: 2.5 }
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.raw.label + ': Preț ' + context.raw.x + ' / Eroare ±' + context.raw.y + '°C';
-                                }
-                            }
-                        },
-                        legend: { display: false }
-                    }
-                }
-            });
-
-            const typeCounts = {};
-            data.forEach(s => {
-                typeCounts[s.type] = (typeCounts[s.type] || 0) + 1;
-            });
-
-            const ctxDoughnut = document.getElementById('doughnutChart').getContext('2d');
-            doughnutChartInstance = new Chart(ctxDoughnut, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(typeCounts),
-                    datasets: [{
-                        data: Object.values(typeCounts),
-                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#64748b']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'right' }
-                    }
-                }
-            });
-        }
-
-        function updateCharts(data) {
-            const scatterData = data.map(s => ({
-                x: s.price, y: s.acc, label: s.name, isWinner: s.name === 'LM35'
-            }));
+    <!-- Navbar Nou (Stilul din a doua imagine) -->
+    <nav class="fixed top-0 w-full bg-white z-50 border-b border-gray-100 shadow-sm h-16 flex items-center">
+        <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 flex justify-between items-center">
             
-            scatterChartInstance.data.datasets[0].data = scatterData;
-            scatterChartInstance.data.datasets[0].backgroundColor = scatterData.map(d => d.isWinner ? '#10b981' : '#3b82f6');
-            scatterChartInstance.data.datasets[0].borderColor = scatterData.map(d => d.isWinner ? '#047857' : '#2563eb');
-            scatterChartInstance.data.datasets[0].pointRadius = scatterData.map(d => d.isWinner ? 10 : 6);
-            scatterChartInstance.update();
+            <!-- Logo -->
+            <div class="flex items-center">
+                <a href="#" class="text-2xl font-bold text-brandOrange tracking-tight">/Micro Controlere/</a>
+            </div>
 
-            const typeCounts = {};
-            data.forEach(s => { typeCounts[s.type] = (typeCounts[s.type] || 0) + 1; });
-            doughnutChartInstance.data.labels = Object.keys(typeCounts);
-            doughnutChartInstance.data.datasets[0].data = Object.values(typeCounts);
-            doughnutChartInstance.update();
-        }
+            <!-- Meniul tip "Pill" (doar pe desktop) -->
+            <div class="hidden md:flex bg-pillBg rounded-full p-1 items-center space-x-1">
+                <a href="#proiect" class="px-4 py-1.5 rounded-full text-sm font-semibold text-gray-900 bg-white shadow-sm">Proiectul Nostru</a>
+                <a href="#categorii" class="px-4 py-1.5 rounded-full text-sm font-medium text-gray-600 hover:text-gray-900 transition">5 Categorii</a>
+                <a href="#lista-25" class="px-4 py-1.5 rounded-full text-sm font-medium text-gray-600 hover:text-gray-900 transition">Tabel 25 Senzori</a>
+                <a href="#ales" class="px-4 py-1.5 rounded-full text-sm font-medium text-gray-600 hover:text-gray-900 transition">Senzorul Ales</a>
+            </div>
 
-        function applyFilters() {
-            const typeVal = document.getElementById('typeFilter').value;
-            const protVal = document.getElementById('proteusFilter').value;
+            <!-- Buton meniu mobil -->
+            <button id="btn-menu" class="md:hidden bg-pillBg p-2 rounded-full text-gray-700 hover:bg-gray-200 focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+        </div>
+    </nav>
 
-            const filteredData = sensorsData.filter(s => {
-                let matchType = (typeVal === 'all') || (s.type === typeVal);
-                let matchProt = true;
-                if(protVal === 'Da') matchProt = s.proteus.includes('Da');
-                if(protVal === 'Nu') matchProt = s.proteus.includes('Nu');
-                return matchType && matchProt;
-            });
+    <!-- Dropdown Meniu Mobil -->
+    <div id="mobile-menu" class="fixed top-16 w-full bg-white shadow-lg z-40 border-b border-gray-100 px-4 py-4 space-y-3 md:hidden">
+        <a href="#proiect" class="block text-base font-semibold text-gray-900">Proiectul Nostru</a>
+        <a href="#categorii" class="block text-base font-medium text-gray-600">Cele 5 Categorii</a>
+        <a href="#lista-25" class="block text-base font-medium text-gray-600">Tabelul cu 25 Senzori</a>
+        <a href="#ales" class="block text-base font-medium text-gray-600">Senzorul Ales (LM35)</a>
+    </div>
 
-            renderTable(filteredData);
-            updateCharts(filteredData);
-            document.getElementById('sensorDetailPanel').classList.add('hidden-content');
-        }
+    <!-- Antet Proiect -->
+    <main class="pt-24 max-w-7xl mx-auto px-4 sm:px-6">
+        
+        <section id="proiect" class="mb-16 bg-brandBg rounded-3xl p-8 border border-gray-200">
+            <h1 class="text-3xl md:text-5xl font-bold text-gray-900 mb-6">Proiect: Construirea unui Termostat de Cameră</h1>
+            <p class="text-lg text-gray-700 mb-6">
+                Scopul acestui document este să analizăm 5 categorii diferite de senzori de temperatură (cu câte 5 senzori reprezentativi fiecare) pentru a alege senzorul perfect pentru termostatul nostru.
+            </p>
+            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm inline-block">
+                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Cerințele obligatorii pentru aplicația noastră:</h3>
+                <ul class="space-y-3">
+                    <li class="flex items-center text-gray-800 font-medium">
+                        <span class="w-2 h-2 rounded-full bg-brandOrange mr-3"></span>
+                        Domeniu de măsurare (Range): <strong class="ml-2 text-brandOrange">5 °C ... 40 °C</strong>
+                    </li>
+                    <li class="flex items-center text-gray-800 font-medium">
+                        <span class="w-2 h-2 rounded-full bg-brandOrange mr-3"></span>
+                        Acuratețe (Accuracy): <strong class="ml-2 text-brandOrange">±0.2 °C ... ±0.5 °C</strong>
+                    </li>
+                </ul>
+            </div>
+        </section>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            renderTable(sensorsData);
-            initCharts(sensorsData);
+        <section id="categorii" class="space-y-20">
+            <!-- CATEGORIA 1: TERMISTORI -->
+            <div>
+                <div class="border-b-2 border-brandOrange pb-2 mb-6">
+                    <h2 class="text-3xl font-bold text-gray-900">1. Termistori (NTC și PTC)</h2>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                    <div class="lg:col-span-2 space-y-4">
+                        <h3 class="text-xl font-semibold text-gray-800">Cum funcționează (Principiul de operare)</h3>
+                        <p class="text-gray-600">Termistorii sunt rezistențe care își schimbă valoarea în funcție de temperatură. NTC (Negative Temperature Coefficient) înseamnă că rezistența scade când se încălzește. PTC înseamnă că rezistența crește. Sunt foarte ieftini și sensibili, dar relația dintre temperatură și rezistență nu este o linie dreaptă (este o curbă).</p>
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <span class="block text-xs font-bold text-gray-500 uppercase mb-2">Formula de calcul (Ecuația Steinhart-Hart):</span>
+                            <code class="text-lg text-gray-800">1 / T = A + B(ln R) + C(ln R)³</code>
+                            <p class="text-sm text-gray-500 mt-2">* T = Temperatura, R = Rezistența senzorului, A,B,C = Constante din fișa tehnică.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 flex flex-col items-center justify-center">
+                        <span class="block text-xs font-bold text-gray-500 uppercase w-full mb-4">Schema electrică tipică</span>
+                        <!-- Schema divizor tensiune HTML -->
+                        <div class="flex flex-col items-center">
+                            <div class="text-sm font-bold">+5V (VCC)</div>
+                            <div class="wire-v"></div>
+                            <div class="schematic-box">R_Fix (ex. 10k)</div>
+                            <div class="wire-v"></div>
+                            <div class="flex items-center w-full justify-center">
+                                <div class="wire-h"></div><div class="node"></div><div class="wire-h"></div><span class="text-sm font-bold ml-2">Spre pin ADC Arduino</span>
+                            </div>
+                            <div class="wire-v"></div>
+                            <div class="schematic-box text-brandOrange">Termistor NTC</div>
+                            <div class="wire-v"></div>
+                            <div class="text-sm font-bold">GND (Masă)</div>
+                        </div>
+                    </div>
+                </div>
 
-            document.getElementById('typeFilter').addEventListener('change', applyFilters);
-            document.getElementById('proteusFilter').addEventListener('change', applyFilters);
+                <!-- Lista 5 Senzori Categoria 1 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <!-- Componenta Senzor 1 -->
+                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">NTC 10k</h4>
+                        <p class="text-sm text-gray-600 mb-3">Cel mai folosit termistor. Rezistența este de 10.000 ohmi la 25°C.</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±1.0 °C</p>
+                            <p><strong>Aplicație:</strong> Termometre de cameră simple, aer condiționat.</p>
+                        </div>
+                        <a href="https://www.alldatasheet.com/view.jsp?Searchword=NTC10K" target="_blank" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded">Fișa Tehnică</a>
+                    </div>
+                    <!-- Senzor 2 -->
+                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">NTC 100k</h4>
+                        <p class="text-sm text-gray-600 mb-3">Varianta pentru temperaturi mai mari. Folosit des în imprimante 3D.</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±1.0 °C</p>
+                            <p><strong>Aplicație:</strong> Hotend imprimantă 3D (până la 250°C).</p>
+                        </div>
+                        <a href="https://www.alldatasheet.com/view.jsp?Searchword=NTC100K" target="_blank" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded">Fișa Tehnică</a>
+                    </div>
+                    <!-- Senzor 3 -->
+                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">PTC 1k</h4>
+                        <p class="text-sm text-gray-600 mb-3">Rezistența crește cu temperatura. Nu e bun pentru măsurare exactă.</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±2.0 °C</p>
+                            <p><strong>Aplicație:</strong> Protecție la supraîncălzire a motoarelor.</p>
+                        </div>
+                        <a href="https://www.alldatasheet.com/view.jsp?Searchword=PTC1K" target="_blank" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded">Fișa Tehnică</a>
+                    </div>
+                    <!-- Senzor 4 -->
+                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">NTC 1k</h4>
+                        <p class="text-sm text-gray-600 mb-3">Rezistență mai mică, trage mai mult curent. Mai rar folosit cu Arduino.</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±1.0 °C</p>
+                            <p><strong>Aplicație:</strong> Circuite electronice vechi.</p>
+                        </div>
+                        <a href="https://www.alldatasheet.com/view.jsp?Searchword=NTC1K" target="_blank" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded">Fișa Tehnică</a>
+                    </div>
+                    <!-- Senzor 5 -->
+                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">KTY81</h4>
+                        <p class="text-sm text-gray-600 mb-3">Senzor de siliciu (PTC). Aproape liniar, dar necesită calibrare din soft.</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±2.0 °C</p>
+                            <p><strong>Aplicație:</strong> Senzor de temperatură exterioară la auto.</p>
+                        </div>
+                        <a href="https://www.alldatasheet.com/view.jsp?Searchword=KTY81" target="_blank" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded">Fișa Tehnică</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CATEGORIA 2: RTD -->
+            <div>
+                <div class="border-b-2 border-brandOrange pb-2 mb-6">
+                    <h2 class="text-3xl font-bold text-gray-900">2. RTD (Rezistoare din Platină/Metale)</h2>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                    <div class="lg:col-span-2 space-y-4">
+                        <h3 class="text-xl font-semibold text-gray-800">Cum funcționează</h3>
+                        <p class="text-gray-600">RTD (Resistance Temperature Detector) sunt făcute din metale pure (de obicei Platină). Sunt cei mai exacți și stabili senzori de pe piață. Au un răspuns liniar. Problema este că schimbarea rezistenței este foarte mică, așa că au nevoie de un circuit special de măsurare (Punte Wheatstone) și un amplificator de semnal.</p>
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <span class="block text-xs font-bold text-gray-500 uppercase mb-2">Formula de calcul liniară (simplificată):</span>
+                            <code class="text-lg text-gray-800">R = R₀ * (1 + α * T)</code>
+                            <p class="text-sm text-gray-500 mt-2">* R₀ = Rezistența la 0°C (ex. 100 ohmi pentru Pt100). α = 0.00385.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 flex flex-col items-center justify-center">
+                        <span class="block text-xs font-bold text-gray-500 uppercase w-full mb-4">Schema electrică (Simplificată - 2 Fire)</span>
+                        <div class="flex flex-col items-center mt-2">
+                            <div class="flex">
+                                <div class="schematic-box text-xs">Sursa Curent Constant</div>
+                            </div>
+                            <div class="wire-v"></div>
+                            <div class="flex items-center">
+                                <div class="wire-h"></div><div class="node"></div><div class="wire-h"></div><span class="text-sm font-bold ml-2">Voltmetru / Amplificator (MAX31865)</span>
+                            </div>
+                            <div class="wire-v"></div>
+                            <div class="schematic-box text-brandOrange">Senzor Pt100</div>
+                            <div class="wire-v"></div>
+                            <div class="text-sm font-bold">GND</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">Pt100</h4>
+                        <p class="text-sm text-gray-600 mb-3">Standardul industrial. Are 100 Ohmi la 0°C. Extrem de exact.</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±0.1 °C</p>
+                            <p><strong>Aplicație:</strong> Industria alimentară, farmaceutică.</p>
+                        </div>
+                        <a href="https://www.alldatasheet.com/view.jsp?Searchword=PT100" target="_blank" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded">Fișa Tehnică</a>
+                    </div>
+                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">Pt1000</h4>
+                        <p class="text-sm text-gray-600 mb-3">1000 Ohmi la 0°C. Mai ușor de citit cu Arduino pt. că schimbarea de tensiune e mai mare.</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±0.1 °C</p>
+                            <p><strong>Aplicație:</strong> Sisteme de panouri solare.</p>
+                        </div>
+                        <a href="https://www.alldatasheet.com/view.jsp?Searchword=PT1000" target="_blank" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded">Fișa Tehnică</a>
+                    </div>
+                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">Ni100</h4>
+                        <p class="text-sm text-gray-600 mb-3">Făcut din Nichel în loc de Platină. Mai ieftin, dar domeniu de temperatură mai mic.</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±0.4 °C</p>
+                            <p><strong>Aplicație:</strong> HVAC, sisteme de climatizare clădiri.</p>
+                        </div>
+                        <a href="https://www.alldatasheet.com/view.jsp?Searchword=NI100" target="_blank" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded">Fișa Tehnică</a>
+                    </div>
+                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">Ni1000</h4>
+                        <p class="text-sm text-gray-600 mb-3">Nichel cu rezistență de 1000 Ohmi la 0°C. Standard în Europa pt automatizări.</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±0.4 °C</p>
+                            <p><strong>Aplicație:</strong> Senzori de conductă centrală termică.</p>
+                        </div>
+                        <a href="https://www.alldatasheet.com/view.jsp?Searchword=NI1000" target="_blank" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded">Fișa Tehnică</a>
+                    </div>
+                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">Cu50</h4>
+                        <p class="text-sm text-gray-600 mb-3">Făcut din Cupru. 50 Ohmi la 0°C. Cel mai liniar material, dar predispus la oxidare.</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±0.5 °C</p>
+                            <p><strong>Aplicație:</strong> Generatoare electrice vechi.</p>
+                        </div>
+                        <a href="https://www.alldatasheet.com/view.jsp?Searchword=CU50+SENSOR" target="_blank" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded">Fișa Tehnică</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CATEGORIA 3: TERMOCUPLURI -->
+            <div>
+                <div class="border-b-2 border-brandOrange pb-2 mb-6">
+                    <h2 class="text-3xl font-bold text-gray-900">3. Termocupluri</h2>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                    <div class="lg:col-span-2 space-y-4">
+                        <h3 class="text-xl font-semibold text-gray-800">Cum funcționează</h3>
+                        <p class="text-gray-600">Sunt făcute din două sârme din metale diferite lipite la un capăt. Când capătul este încălzit, se produce o tensiune foarte mică (milivolți) - acesta se numește efectul Seebeck. Sunt perfecte pentru cuptoare (+1000°C), dar măsoară foarte prost la temperatura camerei și au nevoie de compensare pentru cabluri ("cold junction compensation").</p>
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <span class="block text-xs font-bold text-gray-500 uppercase mb-2">Formula de calcul (Efectul Seebeck):</span>
+                            <code class="text-lg text-gray-800">V = S * ΔT</code>
+                            <p class="text-sm text-gray-500 mt-2">* V = Tensiunea produsă, S = Coeficientul Seebeck (metal), ΔT = Diferența de temperatură între capete.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 flex flex-col items-center justify-center">
+                        <span class="block text-xs font-bold text-gray-500 uppercase w-full mb-4">Schema electrică</span>
+                        <div class="flex items-center justify-center h-24 relative w-full">
+                            <div class="border-t-2 border-red-500 w-16 absolute top-8 left-4"></div>
+                            <div class="border-t-2 border-blue-500 w-16 absolute top-16 left-4"></div>
+                            
+                            <!-- Junction -->
+                            <div class="w-4 h-4 bg-gray-800 rounded-full absolute left-2 top-[44px]"></div>
+                            <span class="absolute left-0 top-3 text-xs font-bold">Căldură</span>
+                            
+                            <div class="schematic-box absolute right-2 top-8 text-xs">Amplificator (ex. MAX6675)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">Tip K</h4>
+                        <p class="text-sm text-gray-600 mb-3">Nichel-Crom / Nichel-Aluminiu. Cel mai ieftin și popular pt temperaturi înalte.</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±2.2 °C</p>
+                            <p><strong>Aplicație:</strong> Cuptoare industriale, eșapament auto.</p>
+                        </div>
+                        <a href="https://www.alldatasheet.com/view.jsp?Searchword=THERMOCOUPLE+TYPE+K" target="_blank" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded">Fișa Tehnică</a>
+                    </div>
+                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">Tip J</h4>
+                        <p class="text-sm text-gray-600 mb-3">Fier / Constantan. Mai limitat la temperaturi maxime, dar semnal ușor mai puternic.</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±2.2 °C</p>
+                            <p><strong>Aplicație:</strong> Prelucrarea maselor plastice.</p>
+                        </div>
+                        <a href="https://www.alldatasheet.com/view.jsp?Searchword=TYPE+J" target="_blank" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded">Fișa Tehnică</a>
+                    </div>
+                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">Tip T</h4>
+                        <p class="text-sm text-gray-600 mb-3">Cupru / Constantan. Foarte bun pentru temperaturi negative (îngheț).</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±1.0 °C</p>
+                            <p><strong>Aplicație:</strong> Criogenie, frigidere industriale.</p>
+                        </div>
+                        <a href="https://www.alldatasheet.com/view.jsp?Searchword=TYPE+T" target="_blank" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded">Fișa Tehnică</a>
+                    </div>
+                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">Tip N</h4>
+                        <p class="text-sm text-gray-600 mb-3">Nicrosil / Nisil. Alternativă mai stabilă la Tipul K, nu se oxidează așa ușor.</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±2.2 °C</p>
+                            <p><strong>Aplicație:</strong> Metalurgie, rafinării.</p>
+                        </div>
+                        <a href="https://www.alldatasheet.com/view.jsp?Searchword=TYPE+N" target="_blank" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded">Fișa Tehnică</a>
+                    </div>
+                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">Tip S</h4>
+                        <p class="text-sm text-gray-600 mb-3">Platină / Rodiu. Extrem de scump, folosit pentru calibrări de precizie la peste 1000°C.</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±1.5 °C (la temp mari)</p>
+                            <p><strong>Aplicație:</strong> Laboratoare de metrologie, sticlărie.</p>
+                        </div>
+                        <a href="https://www.alldatasheet.com/view.jsp?Searchword=TYPE+S" target="_blank" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded">Fișa Tehnică</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CATEGORIA 4: SEMICONDUCTORI ANALOGICI -->
+            <div>
+                <div class="border-b-2 border-brandOrange pb-2 mb-6">
+                    <h2 class="text-3xl font-bold text-gray-900">4. Semiconductori Liniari (Circuite Integrate Analogice)</h2>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                    <div class="lg:col-span-2 space-y-4">
+                        <h3 class="text-xl font-semibold text-gray-800">Cum funcționează</h3>
+                        <p class="text-gray-600">Aceștia sunt practic cipuri (circuite integrate) care au în interior tranzistori. Se bazează pe faptul că tensiunea pe un tranzistor de siliciu scade previzibil când se încălzește. Marele avantaj? Inginerii care au creat cipul au făcut ieșirea <strong>perfect liniară</strong>. Din cip iese o tensiune electrică direct proporțională cu gradele Celsius.</p>
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <span class="block text-xs font-bold text-gray-500 uppercase mb-2">Formula de calcul (Aici este magie, foarte simplă):</span>
+                            <code class="text-lg text-gray-800">Tensiune_Ieșire = 10 mV / °C</code>
+                            <p class="text-sm text-gray-500 mt-2">Dacă citești 250 milivolți cu Arduino, ai exact 25.0 °C. Atât de simplu.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 flex flex-col items-center justify-center">
+                        <span class="block text-xs font-bold text-gray-500 uppercase w-full mb-4">Schema electrică (Exemplu LM35)</span>
+                        <div class="flex items-center space-x-2 mt-2 relative border-2 border-gray-800 p-4 rounded-lg bg-white">
+                            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-white px-2 font-bold text-xs">LM35 (Capsulă TO-92)</div>
+                            <div class="flex flex-col items-center"><div class="text-xs font-bold text-red-600">+5V</div><div class="wire-v h-6"></div><div class="text-xs">Pin 1</div></div>
+                            <div class="flex flex-col items-center"><div class="text-xs font-bold text-blue-600">V_OUT</div><div class="wire-v h-6"></div><div class="text-xs">Pin 2</div></div>
+                            <div class="flex flex-col items-center"><div class="text-xs font-bold text-gray-800">GND</div><div class="wire-v h-6"></div><div class="text-xs">Pin 3</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div class="border-2 border-brandOrange bg-orange-50 rounded-xl p-4 shadow-md relative">
+                        <span class="absolute -top-3 right-4 bg-brandOrange text-white text-xs font-bold px-2 py-1 rounded">Cel mai potrivit</span>
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">LM35</h4>
+                        <p class="text-sm text-gray-600 mb-3">Senzorul ideal pentru proiecte educaționale și simulări în Proteus. Iese direct în Celsius.</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±0.5 °C <span class="text-green-600 font-bold">(În parametrii noștri!)</span></p>
+                            <p><strong>Aplicație:</strong> Termostate de cameră, incubatoare, hobby.</p>
+                        </div>
+                        <a href="https://www.ti.com/lit/ds/symlink/lm35.pdf" target="_blank" class="block w-full text-center bg-brandOrange hover:bg-orange-600 text-white text-xs font-bold py-2 rounded transition">Fișa Tehnică</a>
+                    </div>
+                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">TMP36</h4>
+                        <p class="text-sm text-gray-600 mb-3">Generație mai nouă. Poate fi alimentat la doar 3.3V, ideal pentru plăci moderne.</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±2.0 °C <span class="text-red-500">(Prea mare)</span></p>
+                            <p><strong>Aplicație:</strong> Termometre pe baterii, IoT.</p>
+                        </div>
+                        <a href="https://www.analog.com/media/en/technical-documentation/data-sheets/TMP35_36_37.pdf" target="_blank" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded">Fișa Tehnică</a>
+                    </div>
+                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">LM34</h4>
+                        <p class="text-sm text-gray-600 mb-3">Idem cu LM35, dar tensiunea iese proporțional cu gradele Fahrenheit.</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±0.5 °C</p>
+                            <p><strong>Aplicație:</strong> Proiecte destinate pieței din SUA.</p>
+                        </div>
+                        <a href="https://www.ti.com/lit/ds/symlink/lm34.pdf" target="_blank" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded">Fișa Tehnică</a>
+                    </div>
+                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">AD590</h4>
+                        <p class="text-sm text-gray-600 mb-3">Ieșirea nu e în tensiune, ci în curent (MicroAmperi). Transmite semnalul pe cabluri lungi fără zgomot.</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±0.5 °C</p>
+                            <p><strong>Aplicație:</strong> Instrumentație de control industrial.</p>
+                        </div>
+                        <a href="https://www.analog.com/media/en/technical-documentation/data-sheets/AD590.pdf" target="_blank" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded">Fișa Tehnică</a>
+                    </div>
+                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">LM335</h4>
+                        <p class="text-sm text-gray-600 mb-3">Lucrează ca o diodă Zener. Ieșirea este proporțională cu gradele Kelvin.</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±1.0 °C</p>
+                            <p><strong>Aplicație:</strong> Surse de alimentare, instrumente științifice.</p>
+                        </div>
+                        <a href="https://www.ti.com/lit/ds/symlink/lm335.pdf" target="_blank" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded">Fișa Tehnică</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CATEGORIA 5: SEMICONDUCTORI DIGITALI -->
+            <div>
+                <div class="border-b-2 border-brandOrange pb-2 mb-6">
+                    <h2 class="text-3xl font-bold text-gray-900">5. Senzori Digitali (Circuite Integrate)</h2>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                    <div class="lg:col-span-2 space-y-4">
+                        <h3 class="text-xl font-semibold text-gray-800">Cum funcționează</h3>
+                        <p class="text-gray-600">Aceștia au la bază un senzor pe siliciu, dar în interiorul cipului au și un Convertor Analog-Digital (ADC) și un procesor mic. Astfel, în loc să trimită o tensiune spre Arduino, trimit date direct sub formă de 1 și 0 (protocol digital I2C, SPI sau 1-Wire). Sunt imuni la zgomot electric pe fire.</p>
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <span class="block text-xs font-bold text-gray-500 uppercase mb-2">Comunicație:</span>
+                            <p class="text-sm text-gray-800">Nu au o formulă simplă de tensiune. Se citește un registru de memorie (ex: adresa 0x00), iar microcontroller-ul primește direct numărul "25.4" în grade.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 flex flex-col items-center justify-center">
+                        <span class="block text-xs font-bold text-gray-500 uppercase w-full mb-4">Schema electrică (Ex. protocol I2C)</span>
+                        <div class="flex items-center space-x-2 mt-2 relative border-2 border-gray-800 p-4 rounded-lg bg-white">
+                            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-white px-2 font-bold text-xs text-center w-full">Cip I2C<br>(ex. MCP9808)</div>
+                            <div class="flex flex-col items-center mt-3"><div class="text-[10px] font-bold">VCC</div><div class="wire-v h-4"></div></div>
+                            <div class="flex flex-col items-center mt-3"><div class="text-[10px] font-bold">SDA</div><div class="wire-v h-4"></div></div>
+                            <div class="flex flex-col items-center mt-3"><div class="text-[10px] font-bold">SCL</div><div class="wire-v h-4"></div></div>
+                            <div class="flex flex-col items-center mt-3"><div class="text-[10px] font-bold">GND</div><div class="wire-v h-4"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">DS18B20</h4>
+                        <p class="text-sm text-gray-600 mb-3">Comunicație pe 1 fir (1-Wire). Poți lega 10 senzori pe același cablu.</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±0.5 °C</p>
+                            <p><strong>Aplicație:</strong> Măsurare temp. lichide (versiunea impermeabilă).</p>
+                        </div>
+                        <a href="https://datasheets.maximintegrated.com/en/ds/DS18B20.pdf" target="_blank" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded">Fișa Tehnică</a>
+                    </div>
+                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">DHT22</h4>
+                        <p class="text-sm text-gray-600 mb-3">Măsoară atât temperatura, cât și umiditatea aerului.</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±0.5 °C</p>
+                            <p><strong>Aplicație:</strong> Stații meteo de cameră.</p>
+                        </div>
+                        <a href="https://www.sparkfun.com/datasheets/Sensors/Temperature/DHT22.pdf" target="_blank" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded">Fișa Tehnică</a>
+                    </div>
+                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">MCP9808</h4>
+                        <p class="text-sm text-gray-600 mb-3">Unul din cei mai exacți senzori digitali la preț mic. Protocol I2C.</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±0.25 °C <span class="text-green-600 font-bold">(Perfect)</span></p>
+                            <p><strong>Aplicație:</strong> Echipamente medicale portabile.</p>
+                        </div>
+                        <a href="https://ww1.microchip.com/downloads/en/DeviceDoc/25095A.pdf" target="_blank" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded">Fișa Tehnică</a>
+                    </div>
+                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">BME280</h4>
+                        <p class="text-sm text-gray-600 mb-3">Senzor 3 în 1: Temperatură, Umiditate și Presiune Barometrică.</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±1.0 °C</p>
+                            <p><strong>Aplicație:</strong> Drones, telefoane mobile, IoT avansat.</p>
+                        </div>
+                        <a href="https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bme280-ds002.pdf" target="_blank" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded">Fișa Tehnică</a>
+                    </div>
+                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                        <h4 class="font-bold text-lg text-brandOrange mb-1">LM75</h4>
+                        <p class="text-sm text-gray-600 mb-3">Simplu, I2C. Are un pin special de alarmă (O.S.) care declanșează dacă se trece de o temperatură.</p>
+                        <div class="text-xs space-y-1 mb-4">
+                            <p><strong>Eroare:</strong> ±2.0 °C</p>
+                            <p><strong>Aplicație:</strong> Pornirea ventilatoarelor din laptopuri/PC-uri.</p>
+                        </div>
+                        <a href="https://www.ti.com/lit/ds/symlink/lm75.pdf" target="_blank" class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded">Fișa Tehnică</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECȚIUNEA TABEL (Analiza) -->
+        <section id="lista-25" class="mt-20 pt-10 border-t border-gray-200">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">Analiza Centralizată: Cei 25 de Senzori</h2>
+            <p class="text-gray-600 mb-6">Am rezolvat modul de afișare al prețului. Acum poți vedea clar care senzor este ieftin (1 bulină) și care este scump (5 buline). Cei din verde sunt prezenți nativ în mediul Proteus.</p>
             
-            // Evenimente pentru integrarea Gemini API
-            
-            document.getElementById('btn-ai-insight').addEventListener('click', async () => {
-                if(!currentSelectedSensorName) return;
-                
-                const btn = document.getElementById('btn-ai-insight');
-                const loading = document.getElementById('ai-insight-loading');
-                const resultDiv = document.getElementById('ai-insight-result');
-                
-                btn.classList.add('hidden');
-                loading.classList.remove('hidden');
-                resultDiv.classList.add('hidden');
-                
-                const prompt = `Explică foarte simplu, pe înțelesul unui începător, la ce este bun sau unde se folosește senzorul de temperatură ${currentSelectedSensorName}. Scrie în limba română, folosește cuvinte ușoare și limitează-te la maxim 3 propoziții scurte.`;
-                
-                const response = await callGeminiAPI(prompt);
-                
-                loading.classList.add('hidden');
-                resultDiv.innerHTML = marked.parse(response);
-                resultDiv.classList.remove('hidden');
-                resultDiv.classList.add('fade-in');
-            });
+            <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Model</th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Categorie / Tip</th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Preț (Ieftin -> Scump)</th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Eroare (±°C)</th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Proteus</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sensorTableBody" class="bg-white divide-y divide-gray-100">
+                        <!-- Generat din JavaScript pt a formata bulinele de pret corect -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
-            document.getElementById('btn-generate-code').addEventListener('click', async () => {
-                const btn = document.getElementById('btn-generate-code');
-                const loading = document.getElementById('ai-code-loading');
-                const resultDiv = document.getElementById('ai-code-result');
-                
-                btn.classList.add('hidden');
-                loading.classList.remove('hidden');
-                
-                const prompt = `Scrie un cod Arduino (C++) simplu și scurt pentru a citi senzorul LM35. Imediat după cod, explică în 2-3 rânduri foarte simple cum se leagă cei 3 pini ai senzorului (VCC, GND, OUT) în simulatorul Proteus. Folosește limba română, scrie ca pentru un începător și fără cuvinte prea tehnice. Folosește Markdown pentru formatare.`;
-                
-                const response = await callGeminiAPI(prompt);
-                
-                loading.classList.add('hidden');
-                resultDiv.innerHTML = marked.parse(response);
-                resultDiv.classList.remove('hidden');
-                resultDiv.classList.add('fade-in');
-            });
+        <!-- SENZORUL ALES -->
+        <section id="ales" class="mt-20 mb-20">
+            <div class="bg-gray-900 rounded-3xl p-8 md:p-12 shadow-xl relative overflow-hidden">
+                <div class="relative z-10 flex flex-col md:flex-row gap-12">
+                    
+                    <div class="flex-1">
+                        <div class="inline-block px-4 py-1 rounded-full bg-brandOrange text-white font-bold text-sm uppercase mb-6">
+                            Senzorul Câștigător Pentru Proiect
+                        </div>
+                        
+                        <h2 class="text-5xl md:text-6xl font-extrabold text-white mb-2">LM35</h2>
+                        <h3 class="text-xl text-gray-400 mb-8 border-b border-gray-700 pb-6">
+                            Senzor Semiconductor Analogic Liniar
+                        </h3>
+                        
+                        <h4 class="text-xl font-bold text-brandOrange mb-4">De ce a câștigat conform cerințelor?</h4>
+                        <ul class="space-y-4 text-gray-300">
+                            <li class="flex items-start">
+                                <span class="text-brandOrange mr-3 mt-1">✓</span>
+                                <div>
+                                    <strong class="text-white block">Cerința Range [5°C - 40°C]</strong>
+                                    LM35 poate citi temperaturi între -55°C și +150°C. Acoperă perfect nevoile unui termostat de cameră.
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-brandOrange mr-3 mt-1">✓</span>
+                                <div>
+                                    <strong class="text-white block">Cerința Accuracy [0.2°C - 0.5°C]</strong>
+                                    LM35 are o eroare garantată de fix ±0.5°C la temperatura camerei. Se încadrează exact în toleranța permisă de profesor.
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-brandOrange mr-3 mt-1">✓</span>
+                                <div>
+                                    <strong class="text-white block">Simulare Fără Probleme</strong>
+                                    În Proteus ISIS, LM35 funcționează direct, are pini clari, nu cere librării externe și poți ridica/scădea temperatura manual cu mouse-ul pe săgeți în timpul simulării.
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-brandOrange mr-3 mt-1">✓</span>
+                                <div>
+                                    <strong class="text-white block">Calcule Simple (Liniar)</strong>
+                                    Fără ecuații complicate! Dă 10mV pe fiecare grad Celsius. <code class="bg-gray-800 px-1 py-0.5 rounded text-sm font-mono text-brandOrange">T = Vout * 100</code>.
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="md:w-1/3 flex flex-col justify-center items-center">
+                        <div class="bg-gray-800 border border-gray-700 p-6 rounded-2xl w-full text-center">
+                            <h4 class="text-gray-300 text-sm uppercase tracking-widest font-bold mb-6 border-b border-gray-700 pb-2">Cod Arduino (Bază)</h4>
+                            <pre class="text-left text-xs text-green-400 font-mono overflow-x-auto">
+int senzorPin = A0; 
+
+void setup() {
+  Serial.begin(9600);
+}
+
+void loop() {
+  // Citim valoarea (0-1023)
+  int citire = analogRead(senzorPin);
+  
+  // Transformăm in Volți (la 5V curent)
+  float tensiune = citire * (5.0 / 1023.0);
+  
+  // LM35 da 10mV/grad -> inmultim cu 100
+  float temp_C = tensiune * 100.0;
+  
+  Serial.print(temp_C);
+  Serial.println(" C");
+  delay(1000);
+}
+                            </pre>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 py-8 text-center text-gray-500 text-sm">
+        <div class="max-w-7xl mx-auto px-4">
+            <p>Documentație Termostat Proiect Inginerie. Senzor ales: LM35. Realizat conform cerințelor specifice de domeniu și acuratețe.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Funcție Meniu Mobil
+        document.getElementById('btn-menu').addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.toggle('open');
+        });
+
+        // Date pentru tabel - cu Pret curat de la 1 la 5
+        const senzori = [
+            { nume: "LM35", tip: "Semiconductor Liniar", pret: 1, err: "±0.5", prot: "Da" },
+            { nume: "TMP36", tip: "Semiconductor Liniar", pret: 1, err: "±2.0", prot: "Da" },
+            { nume: "LM34", tip: "Semiconductor Liniar", pret: 2, err: "±0.5", prot: "Da" },
+            { nume: "AD590", tip: "Semiconductor Liniar", pret: 5, err: "±0.5", prot: "Da" },
+            { nume: "LM335", tip: "Semiconductor Liniar", pret: 1, err: "±1.0", prot: "Da" },
+            { nume: "DS18B20", tip: "Semiconductor Digital", pret: 2, err: "±0.5", prot: "Da" },
+            { nume: "DHT22", tip: "Semiconductor Digital", pret: 2, err: "±0.5", prot: "Da" },
+            { nume: "MCP9808", tip: "Semiconductor Digital", pret: 3, err: "±0.25", prot: "Nu" },
+            { nume: "BME280", tip: "Semiconductor Digital", pret: 4, err: "±1.0", prot: "Nu" },
+            { nume: "LM75", tip: "Semiconductor Digital", pret: 2, err: "±2.0", prot: "Da" },
+            { nume: "NTC 10k", tip: "Termistor NTC", pret: 1, err: "±1.0", prot: "Da" },
+            { nume: "NTC 100k", tip: "Termistor NTC", pret: 1, err: "±1.0", prot: "Da" },
+            { nume: "PTC 1k", tip: "Termistor PTC", pret: 1, err: "±2.0", prot: "Da" },
+            { nume: "NTC 1k", tip: "Termistor NTC", pret: 1, err: "±1.0", prot: "Da" },
+            { nume: "KTY81", tip: "Termistor PTC (Si)", pret: 1, err: "±2.0", prot: "Da" },
+            { nume: "Pt100", tip: "RTD", pret: 4, err: "±0.1", prot: "Da" },
+            { nume: "Pt1000", tip: "RTD", pret: 4, err: "±0.1", prot: "Da" },
+            { nume: "Ni100", tip: "RTD", pret: 3, err: "±0.4", prot: "Da" },
+            { nume: "Ni1000", tip: "RTD", pret: 3, err: "±0.4", prot: "Da" },
+            { nume: "Cu50", tip: "RTD", pret: 3, err: "±0.5", prot: "Nu" },
+            { nume: "Termocuplu Tip K", tip: "Termocuplu", pret: 3, err: "±2.2", prot: "Nu" },
+            { nume: "Termocuplu Tip J", tip: "Termocuplu", pret: 3, err: "±2.2", prot: "Nu" },
+            { nume: "Termocuplu Tip T", tip: "Termocuplu", pret: 3, err: "±1.0", prot: "Nu" },
+            { nume: "Termocuplu Tip N", tip: "Termocuplu", pret: 3, err: "±2.2", prot: "Nu" },
+            { nume: "Termocuplu Tip S", tip: "Termocuplu", pret: 5, err: "±1.5", prot: "Nu" },
+        ];
+
+        // Construire Tabel
+        const tbody = document.getElementById('sensorTableBody');
+        senzori.forEach(s => {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-gray-50 transition";
+            
+            // Creare Buline Pret (Fix conform pozei)
+            let pretHTML = '<div class="flex space-x-1">';
+            for(let i = 1; i <= 5; i++) {
+                if(i <= s.pret) {
+                    pretHTML += `<div class="w-3 h-3 rounded-full bg-brandOrange"></div>`; // Plin
+                } else {
+                    pretHTML += `<div class="w-3 h-3 rounded-full bg-gray-200"></div>`; // Gol
+                }
+            }
+            pretHTML += '</div>';
+
+            const proteusColor = s.prot === "Da" ? "text-green-600 font-bold" : "text-gray-400";
+            const rowClass = s.nume === "LM35" ? "bg-orange-50 font-bold" : "";
+
+            tr.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 ${rowClass}">${s.nume}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 bg-gray-50"><span class="px-2 py-1 rounded bg-white border border-gray-200">${s.tip}</span></td>
+                <td class="px-6 py-4 whitespace-nowrap">${pretHTML}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-mono">${s.err}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm ${proteusColor}">${s.prot}</td>
+            `;
+            tbody.appendChild(tr);
         });
     </script>
 </body>
